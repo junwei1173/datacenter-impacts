@@ -1,5 +1,5 @@
+//Base script
 const revealItems = document.querySelectorAll('.reveal');
-
 const observer = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
@@ -13,12 +13,18 @@ const observer = new IntersectionObserver(
     rootMargin: '0px 0px -8% 0px'
   }
 );
-
 revealItems.forEach((item) => observer.observe(item));
 
-//VIZ 1
-// VIZ 1
-d3.json("./topo.json").then((topology) => {
+Promise.all([
+  d3.csv("./fractrackerDataCenter.csv"),
+  d3.json("./topo.json")
+]).then((data) => {
+    let dataCenters = data[0];
+    let topology = data[1];
+
+
+
+    //VIZ 1
     const svg = d3.select("#viz1");
 
     // Get the actual width and height in pixels
