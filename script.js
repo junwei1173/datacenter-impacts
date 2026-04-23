@@ -15,3 +15,41 @@ const observer = new IntersectionObserver(
 );
 
 revealItems.forEach((item) => observer.observe(item));
+
+//VIZ 1
+// VIZ 1
+d3.json("./topo.json").then((topology) => {
+    const svg = d3.select("#viz1");
+
+    // Get the actual width and height in pixels
+    const width = svg.node().getBoundingClientRect().width;
+    const height = svg.node().getBoundingClientRect().height;
+    // Select and size the SVG
+    // const svg = d3.select("#viz1")
+    //     .attr("viewBox", `0 0 ${width} ${height}`) // Makes it responsive
+    //     .append("g");
+
+    console.log(width, height);
+
+    // Get the features - ensure "states" matches your JSON key
+    const states = topojson.feature(topology, topology.objects.states).features;
+
+    const projection = d3.geoAlbersUsa()
+        .scale(800) // Lower scale slightly to fit container
+        .translate([width / 2, height / 2]);
+
+    const path = d3.geoPath().projection(projection);
+
+    svg.selectAll("path")
+        .data(states)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("fill", "#222") // Use a dark gray/black
+        .attr("stroke", "#555")
+        .attr("stroke-width", 0.5);
+        
+    console.log("Map rendered with " + states.length + " features.");
+}).catch(err => {
+    console.error("Error loading the JSON:", err);
+});
