@@ -68,6 +68,7 @@ const mapBounds = {
 };
 
 function renderSimViz(dataCenters) {
+  //dataCenters.forEach((d) => console.log(d.status));
     const svg = d3.select("#viz2");
     
     // 1. Define the internal resolution (matching your image size)
@@ -86,7 +87,9 @@ function renderSimViz(dataCenters) {
         .attr("width", viewWidth)
         .attr("height", viewHeight);
 
-    // 4. Scales now use the internal viewWidth/Height, not the screen pixels
+
+
+    //SCALES
     const xScale = d3.scaleLinear()
         .domain([mapBounds.minLon, mapBounds.maxLon])
         .range([0, viewWidth]);
@@ -94,13 +97,19 @@ function renderSimViz(dataCenters) {
     const yScale = d3.scaleLinear()
         .domain([mapBounds.maxLat, mapBounds.minLat])
         .range([0, viewHeight]);
+      
+    const colorScale = d3.scaleOrdinal()
+        .domain(["Expanding", "Operating", "Approved/Permitted/Under construction", "Proposed"])
+        .range(["#660000", "#cc0000", "#ff3333", "#ff9999"]);
     
     svg.selectAll(".node")
         .data(dataCenters)
         .enter()
         .append("circle")
-        .attr("cx", d => xScale(d.lon))
-        .attr("cy", d => yScale(d.lat))
-        .attr("r", 15) // Fixed radius relative to 1280px
-        .attr("fill", "#00d4ff");
+        .attr("cx", d => xScale(+d.long))
+        .attr("cy", d => yScale(+d.lat))
+        .attr("r", 20)
+        .attr("fill", d => colorScale(d.status))
+        .attr("opacity", 0.8)
+        .attr("stroke", "black");
 }

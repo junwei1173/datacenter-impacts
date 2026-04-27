@@ -149,6 +149,56 @@ h1 {
   }
 }
 
+.viz-container {
+  display: flex;
+  width: 95vw;
+  height: 85vh;
+  margin: 2rem auto;
+  background: var(--mist);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.map-wrapper {
+  flex: 2; /* Takes up 2/3 of the space */
+  position: relative;
+  background: #1a261f;
+}
+
+.side-panel {
+  flex: 1; /* Takes up 1/3 of the space */
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Prototype-style dropdowns */
+.dc-config {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+}
+
+.stat-item .label {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--forest);
+  font-weight: 700;
+}
+
+.stat-item .value {
+  font-family: "Fraunces", serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+}
 
 /* Viz 2 Special Styling */
 #viz2 {
@@ -166,3 +216,45 @@ h1 {
     /* Maintain the coordinate system ratio */
     aspect-ratio: 1 / 1;
 }
+
+/* Toggle Switch Styling */
+.toggle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px; width: 14px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider { background-color: var(--forest); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* Background visual logic */
+#viz2-bg { transition: opacity 0.5s ease; }
+.sim-mode #viz2-bg { opacity: 0.1; filter: grayscale(100%); }

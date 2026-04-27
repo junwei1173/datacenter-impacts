@@ -28,8 +28,36 @@
     <section class="hero">
       <svg  id="viz1" width="95vw" height="100vh"></svg>
     </section>
-    <section class="hero">
-      <svg id="viz2"></svg>
+    <section class="viz-container">
+      <div class="map-wrapper">
+        <svg id="viz2"></svg>
+      </div>
+    
+      <aside class="side-panel">
+        <h3>Data Center Sim</h3>
+        
+        <div class="control-group">
+          <label>Create Data Centers</label>
+          <div class="select-stack">
+            <select id="dc1-select" class="dc-config"><option>D1 | Size / Type</option></select>
+            <select id="dc2-select" class="dc-config"><option>D2 | Size / Type</option></select>
+            <select id="dc3-select" class="dc-config"><option>D3 | Size / Type</option></select>
+          </div>
+        </div>
+      
+        <hr>
+      
+        <div class="stats-group">
+          <div class="stat-item">
+            <span class="label">Annual Energy Consumption</span>
+            <span class="value" id="energy-val">## TW / year</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Average Electricity Cost</span>
+            <span class="value" id="cost-val">$###.## / year</span>
+          </div>
+        </div>
+      </aside>
     </section>
   </body>
 
