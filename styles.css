@@ -148,3 +148,21 @@ h1 {
     min-height: 54vh;
   }
 }
+
+
+/* Viz 2 Special Styling */
+#viz2 {
+    /* Use the smaller of the two dimensions to ensure it fits on screen */
+    width: min(95vw, 85vh); 
+    height: min(95vw, 85vh);
+    
+    /* Keep it centered */
+    margin: 0 auto;
+    display: block;
+    
+    /* Remove min-height from hero if it's causing overflow */
+    min-height: auto; 
+    
+    /* Maintain the coordinate system ratio */
+    aspect-ratio: 1 / 1;
+}

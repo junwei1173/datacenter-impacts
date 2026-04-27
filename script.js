@@ -19,7 +19,6 @@ Promise.all([d3.csv("./fractrackerDataCenter.csv"), d3.json("./topo.json")])
   .then((data) => {
     let dataCenters = data[0];
     let topology = data[1];
-
     //VIZ 1
     const svg = d3.select("#viz1");
 
@@ -49,11 +48,59 @@ Promise.all([d3.csv("./fractrackerDataCenter.csv"), d3.json("./topo.json")])
       .attr("stroke", "#555")
       .attr("stroke-width", 0.5);
 
+
+    renderSimViz(dataCenters);
     console.log("Map rendered with " + states.length + " features.");
   })
   .catch((err) => {
     console.error("Error loading the JSON:", err);
   });
 
-const vizID = "#viz2";
-function renderSimViz(centerData) {}
+//VIZ 2
+const simVizID = "#viz2";
+
+// Use the exact numbers from your screenshot
+const mapBounds = {
+    minLon: -77.4818,
+    maxLon: -77.409,
+    minLat: 38.9961,
+    maxLat: 39.0527
+};
+
+function renderSimViz(dataCenters) {
+    const svg = d3.select("#viz2");
+    
+    // 1. Define the internal resolution (matching your image size)
+    const viewWidth = 1280;
+    const viewHeight = 1280;
+
+    // 2. Set the viewBox - this is the secret to no stretching
+    svg.attr("viewBox", `0 0 ${viewWidth} ${viewHeight}`)
+       .attr("preserveAspectRatio", "xMidYMid meet"); // Keeps it centered and proportional
+
+    svg.selectAll("*").remove();
+
+    // 3. Add the background image (it fits perfectly now)
+    svg.append("image")
+        .attr("xlink:href", "./ashburnMap.png")
+        .attr("width", viewWidth)
+        .attr("height", viewHeight);
+
+    // 4. Scales now use the internal viewWidth/Height, not the screen pixels
+    const xScale = d3.scaleLinear()
+        .domain([mapBounds.minLon, mapBounds.maxLon])
+        .range([0, viewWidth]);
+
+    const yScale = d3.scaleLinear()
+        .domain([mapBounds.maxLat, mapBounds.minLat])
+        .range([0, viewHeight]);
+    
+    svg.selectAll(".node")
+        .data(dataCenters)
+        .enter()
+        .append("circle")
+        .attr("cx", d => xScale(d.lon))
+        .attr("cy", d => yScale(d.lat))
+        .attr("r", 15) // Fixed radius relative to 1280px
+        .attr("fill", "#00d4ff");
+}
