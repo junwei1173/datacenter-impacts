@@ -6,10 +6,7 @@
     <title>Data Centers and Climate Impact</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -21,47 +18,53 @@
         As interest in AI and LLMs grow, an abundance of data centers are being built, raising concerns for
         their impacts on resource consumption and the environment.
       </p>
-      
-   
     </header>
 
     <section class="hero">
-      <svg  id="viz1" width="95vw" height="100vh"></svg>
+      <svg id="viz1" width="95vw" height="100vh"></svg>
     </section>
+
     <section class="viz-container">
       <div class="map-wrapper">
         <svg id="viz2"></svg>
       </div>
     
       <aside class="side-panel">
-        <h3>Data Center Sim</h3>
-        
-        <div class="control-group">
-          <label>Create Data Centers</label>
-          <div class="select-stack">
-            <select id="dc1-select" class="dc-config"><option>D1 | Size / Type</option></select>
-            <select id="dc2-select" class="dc-config"><option>D2 | Size / Type</option></select>
-            <select id="dc3-select" class="dc-config"><option>D3 | Size / Type</option></select>
+        <div class="toggle-header">
+          <h3>Simulation Tools</h3>
+          <div class="switch-container">
+            <label class="switch">
+              <input type="checkbox" id="map-toggle" autocomplete="off">
+              <span class="slider round"></span>
+            </label>
+            <span id="toggle-label">Real Map</span>
           </div>
         </div>
       
-        <hr>
+        <div id="sim-controls" style="display: none;">
+          <button id="add-dc-btn" class="cta" style="width: 100%; padding: 0.6rem; font-size: 0.9rem; border: none; cursor: pointer;">
+            + Add New Facility
+          </button>
+
+          <div class="inventory-list" id="dc-inventory">
+            </div>
+        </div>
       
         <div class="stats-group">
           <div class="stat-item">
-            <span class="label">Annual Energy Consumption</span>
-            <span class="value" id="energy-val">## TW / year</span>
+            <span class="label">Total Energy Load</span>
+            <span class="value" id="energy-val">0 TW / yr</span>
           </div>
           <div class="stat-item">
-            <span class="label">Average Electricity Cost</span>
-            <span class="value" id="cost-val">$###.## / year</span>
+            <span class="label">Est. Cooling Water</span>
+            <span class="value" id="cost-val">0 Gal / yr</span>
           </div>
         </div>
       </aside>
     </section>
-  </body>
 
-  <script src="https://unpkg.com/topojson@3"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.7.0/d3.min.js"></script>
-  <script src="./script.js" type="module"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.7.0/d3.min.js"></script>
+    <script src="./script.js" type="module"></script>
+  </body>
 </html>
