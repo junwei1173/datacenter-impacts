@@ -10,7 +10,7 @@ const colorScale = d3.scaleOrdinal()
 const statusRemap = new Map([
     ["Expanding", "Expanding"], 
     ["Operating", "Operating"], 
-    ["Approved/Permitted/Under construction", "Under construction"], 
+    ["Approved/Permitted/Under construction", "In Construction"], 
     ["Proposed", "Proposed"]
     ]);
 
@@ -66,6 +66,11 @@ function setupToggle() {
         updateViz();
         updateInventoryUI();
     });
+
+    d3.selectAll(".status-filter").on("change", function() {
+        // Any time ANY filter toggle changes, re-run the viz
+        updateViz(); 
+    });
 }
 
 function updateViz() {
@@ -84,13 +89,18 @@ function updateViz() {
     const xScale = d3.scaleLinear().domain([mapBounds.minLon, mapBounds.maxLon]).range([0, viewWidth]);
     const yScale = d3.scaleLinear().domain([mapBounds.maxLat, mapBounds.minLat]).range([0, viewHeight]);
 
-    // Filter real data to ensure no NaN errors and keep it within bounds
-    const filteredRealData = dataCenters.filter(d => 
+    // FILTER 1: Geographic Bounds (Removes empty coordinates and out-of-bounds dots)
+    let filteredRealData = dataCenters.filter(d => 
         d.long && d.lat && 
         +d.long >= mapBounds.minLon && +d.long <= mapBounds.maxLon &&
         +d.lat >= mapBounds.minLat && +d.lat <= mapBounds.maxLat
     );
 
+    // FILTER 2: Status Toggles (Checks which switches are turned 'on')
+    const activeFilters = Array.from(document.querySelectorAll('.status-filter:checked')).map(cb => cb.value);
+    filteredRealData = filteredRealData.filter(d => activeFilters.includes(d.status));
+
+    // SELECT DATASET: Simulation Array vs Final Filtered CSV Data
     const currentData = isSimMode ? simData : filteredRealData;
 
     renderNodes(svg, currentData, xScale, yScale);
@@ -116,7 +126,7 @@ function renderNodes(svg, data, xScale, yScale) {
         .attr("cx", d => xScale(+d.long))
         .attr("cy", d => yScale(+d.lat))
         .attr("r", d => isSimMode ? mwScale(d.mw) : mwScale(sizeToMW.get(d.sizerank)))
-        .attr("fill", d => isSimMode ? "#00d4ff" : colorScale(d.status))
+        .attr("fill", d => isSimMode ? "#cc0000" : colorScale(d.status))
         .attr("stroke", "#fff").attr("stroke-width", 3)
         .attr("opacity", 0.7);
 }
@@ -176,47 +186,94 @@ function calculateTotals(data) {
 }
 
 function renderStatusChart(data) {
-    // 1. Calculate the counts for each status
     const counts = colorScale.domain().map(status => ({
         status: status,
         count: data.filter(d => d.status === status).length
-    })).filter(d => d.count > 0); // Only chart statuses that actually exist in the view
+    })).filter(d => d.count > 0); 
 
-    // 2. Setup the D3 Pie generator
-    const width = 120, height = 120, radius = width / 2;
-    const pie = d3.pie().value(d => d.count).sort(null); // sort(null) keeps your colorScale order
-    const arc = d3.arc().innerRadius(30).outerRadius(radius); // innerRadius > 0 creates the "Donut" look
-
-    // 3. Draw the Chart
     const svg = d3.select("#status-pie");
-    svg.selectAll("*").remove(); // Clear old chart
-    
-    const g = svg.append("g").attr("transform", `translate(${width/2},${height/2})`);
+    svg.selectAll("*").remove();
 
+    // Set up a wide viewBox to accommodate long text labels
+    const viewWidth = 400;
+    const viewHeight = 220;
+    svg.attr("viewBox", `0 0 ${viewWidth} ${viewHeight}`)
+       .attr("preserveAspectRatio", "xMidYMid meet");
+
+    // The radius is constrained by the height so it doesn't overlap top/bottom
+    const radius = Math.min(viewWidth, viewHeight) / 2 - 20;
+
+    const g = svg.append("g")
+        .attr("transform", `translate(${viewWidth / 2}, ${viewHeight / 2})`);
+
+    const pie = d3.pie().value(d => d.count).sort(null);
+
+    // Primary arc for the colored slices
+    const arc = d3.arc()
+        .innerRadius(radius * 0.4) // Creates the donut hole
+        .outerRadius(radius * 0.8);
+
+    // Invisible secondary arc for positioning the elbows of the lines
+    const outerArc = d3.arc()
+        .innerRadius(radius * 0.9)
+        .outerRadius(radius * 0.9);
+
+    const pieData = pie(counts);
+
+    // 1. Draw Slices
     g.selectAll("path")
-        .data(pie(counts))
+        .data(pieData)
         .enter().append("path")
         .attr("d", arc)
         .attr("fill", d => colorScale(d.data.status))
         .attr("stroke", "#fff")
         .attr("stroke-width", 2)
-        // Add a smooth transition when the chart updates
         .transition().duration(500)
         .attrTween("d", function(d) {
             const i = d3.interpolate({startAngle: 0, endAngle: 0}, d);
             return function(t) { return arc(i(t)); };
         });
 
-    // 4. Build the HTML Legend
-    const legend = d3.select("#status-legend");
-    legend.selectAll("*").remove(); // Clear old legend
-
-    counts.forEach(d => {
-        const item = legend.append("div").attr("class", "legend-item");
-        item.append("div")
-            .attr("class", "legend-color")
-            .style("background", colorScale(d.status));
+    // 2. Draw Polylines
+    g.selectAll("polyline")
+        .data(pieData)
+        .enter().append("polyline")
+        .attr("class", "polyline")
+        .attr("points", function(d) {
+            const posA = arc.centroid(d);      // Start inside the slice
+            const posB = outerArc.centroid(d); // Bend at the outer ring
+            const posC = outerArc.centroid(d); // End horizontally for the text
             
-        item.append("span").text(`${statusRemap.get(d.status)} (${d.count})`);
-    });
+            // Calculate if the slice is on the right or left side of the chart
+            const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+            // Stretch the line left or right depending on which half it's on
+            posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1); 
+            
+            return [posA, posB, posC];
+        });
+
+    // 3. Draw Labels
+    g.selectAll("text")
+        .data(pieData)
+        .enter().append("text")
+        .text(d => {
+            const name = statusRemap.get(d.data.status);
+            return `${name} (${d.data.count})`;
+        })
+        .attr("transform", function(d) {
+            const pos = outerArc.centroid(d);
+            const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+            // Push the text slightly past the end of the line
+            pos[0] = radius * 1.0 * (midangle < Math.PI ? 1 : -1);
+            return `translate(${pos})`;
+        })
+        .style("text-anchor", function(d) {
+            // Anchor text to start on the right side, and end on the left side
+            const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+            return (midangle < Math.PI ? "start" : "end");
+        })
+        .style("font-size", "0.9rem")
+        .style("font-weight", "600")
+        .style("fill", "var(--forest-deep)")
+        .style("alignment-baseline", "middle");
 }

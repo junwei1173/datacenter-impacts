@@ -42,9 +42,41 @@
         </div>
 
         <div id="real-controls">
+          <div class="filter-group-toggles">
+            <div class="filter-row">
+              <span class="filter-label"><span class="dot" style="background:#cc0000"></span> Operating</span>
+              <label class="switch">
+                <input type="checkbox" class="status-filter" value="Operating" autocomplete="off" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+            
+            <div class="filter-row">
+              <span class="filter-label"><span class="dot" style="background:#ff3333"></span> In Development</span>
+              <label class="switch">
+                <input type="checkbox" class="status-filter" value="Approved/Permitted/Under construction" autocomplete="off" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+          
+            <div class="filter-row">
+              <span class="filter-label"><span class="dot" style="background:#ff9999"></span> Proposed</span>
+              <label class="switch">
+                <input type="checkbox" class="status-filter" value="Proposed" autocomplete="off" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+          
+            <div class="filter-row">
+              <span class="filter-label"><span class="dot" style="background:#660000"></span> Expanding</span>
+              <label class="switch">
+                <input type="checkbox" class="status-filter" value="Expanding" autocomplete="off" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+          </div>
           <div class="chart-wrapper">
             <svg id="status-pie" width="120" height="120"></svg>
-            <div id="status-legend" class="legend-list"></div>
           </div>
         </div>
 
