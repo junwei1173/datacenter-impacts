@@ -145,7 +145,7 @@ function updateInventoryUI() {
                 body.classed("open", !body.classed("open"));
             });
         
-        header.append("span").text(`Facility ${i + 1}`);
+        header.append("span").text(`Data Center ${i + 1}`);
         header.append("span").text("▼").style("font-size", "0.6rem");
 
         const body = card.append("div").attr("class", "card-body");
@@ -163,7 +163,7 @@ function updateInventoryUI() {
             });
 
         body.append("button")
-            .text("Remove Facility")
+            .text("Remove Data Center")
             .style("margin-top", "10px").style("display", "block").style("cursor", "pointer")
             .on("click", () => {
                 simData.splice(i, 1);
@@ -174,8 +174,19 @@ function updateInventoryUI() {
 }
 
 function calculateTotals(data) {
-    // Using 40MW as a placeholder average for real-world facilities
-    const totalMW = isSimMode ? data.reduce((s, d) => s + d.mw, 0) : data.length * 40;
+    // data.forEach((d) => {
+    //         console.log(d.sizerank + " : " + d.mw);
+    // })
+    const totalMW = isSimMode ? data.reduce((s, d) => s + d.mw, 0) : data.reduce((s, d) => {
+        if(d.mw !== "") {
+            return s + Number(d.mw);
+        }
+        if(d.sizerank !== "Unknown") {
+            return s + sizeToMW.get(d.sizerank);
+        }
+        return s + 5;
+        }, 0
+    );
     
     // Maintain precision for math, format strings only at the end
     const annualTW = totalMW * 0.00876; 
