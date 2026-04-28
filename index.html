@@ -117,10 +117,10 @@
     
       <aside class="side-panel">
         <div class="toggle-header">
-          <h3>Simulation Tools</h3>
+          <h3>Ashburn, Virginia</h3>
           <div class="switch-container">
             <label class="switch">
-              <input type="checkbox" id="map-toggle" autocomplete="off" checked>
+              <input type="checkbox" id="map-toggle" autocomplete="off">
               <span class="slider round"></span>
             </label>
             <span id="toggle-label">Real Map</span>
@@ -167,10 +167,22 @@
         </div>
 
         <div id="sim-controls" style="display: none;">
-          <button id="add-dc-btn" class="cta" style="width: 100%; padding: 0.6rem; font-size: 0.9rem; border: none; cursor: pointer;">
+          <button id="add-dc-btn" class="btn-secondary" style="color: #163024; width: 100%; padding: 0.6rem; cursor: pointer; margin-bottom: 0.5rem;">
             + Add New Center
           </button>
-
+          
+          <div class="action-row">
+            <button id="reset-dc-btn" class="btn-secondary">Reset to Real</button>
+            <button id="clear-dc-btn" class="btn-danger">Clear All</button>
+          </div>
+        
+          <div class="clear-grid">
+            <button class="btn-danger-outline" data-clear="Operating">Clear Operating</button>
+            <button class="btn-danger-outline" data-clear="Approved/Permitted/Under construction">Clear In Dev</button>
+            <button class="btn-danger-outline" data-clear="Proposed">Clear Proposed</button>
+            <button class="btn-danger-outline" data-clear="Expanding">Clear Expanding</button>
+          </div>
+        
           <div class="inventory-list" id="dc-inventory">
             </div>
         </div>
