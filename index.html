@@ -24,84 +24,136 @@
         </div>
 
         <aside id="sidebar">
+
+          <!-- Header -->
           <div id="sb-header">
             <div id="sb-scope">United States</div>
             <div id="sb-detail">Hover or click a state / data center</div>
           </div>
 
-          <div id="sb-stats">
-
-            <!-- 1 · Data centers -->
-            <div class="stat-card">
-              <div class="stat-label">Data Centers</div>
-              <div class="stat-value" id="sb-count">—</div>
-            </div>
-
-            <!-- 2 · Avg bill increase -->
-            <div class="stat-card stat-card--bill">
-              <div class="stat-label">Est. Avg Annual Bill Increase</div>
-              <div class="stat-value" id="sb-bill-increase">—</div>
-              <div class="stat-note" id="sb-bill-note">per household / yr</div>
-              <details class="calc-details">
-                <summary>How is this calculated?</summary>
-                <div class="calc-body" id="sb-bill-calc">—</div>
-              </details>
-            </div>
-
-            <!-- 3 · Annual electricity cost -->
-            <div class="stat-card">
-              <div class="stat-label">Est. Annual Electricity Cost</div>
-              <div class="stat-value" id="sb-cost">—</div>
-              <div class="stat-note">at $70 / MWh commercial rate</div>
-            </div>
-
-            <!-- 4 · CO2 + equivalents -->
-            <div class="stat-card stat-card--co2">
-              <div class="stat-label">Est. Annual CO&#x2082; Emissions</div>
-              <div class="stat-value" id="sb-co2">—</div>
-              <div class="stat-note">386 kg / MWh US grid avg</div>
-              <div class="warming-block">
-                <div class="warming-block-title">How this heats the Earth</div>
-                <div class="warming-row">
-                  <span class="warming-icon">&#x2708;</span>
-                  <div><span id="sb-eq-flights" class="warming-value">—</span><span class="warming-label"> cross-country flights / yr</span></div>
-                </div>
-                <div class="warming-row">
-                  <span class="warming-icon">&#x1F6E2;</span>
-                  <div><span id="sb-eq-barrels" class="warming-value">—</span><span class="warming-label"> oil barrels burned / yr</span></div>
-                </div>
-                <div class="warming-row">
-                  <span class="warming-icon">&#x26AB;</span>
-                  <div><span id="sb-eq-coal" class="warming-value">—</span><span class="warming-label"> tonnes coal burned / yr</span></div>
-                </div>
-                <div class="warming-note">Each year's CO&#x2082; adds permanently to atmospheric concentration. Effects compound over centuries.</div>
-              </div>
-            </div>
-
-            <!-- 5 · Annual energy consumed -->
-            <div class="stat-card">
-              <div class="stat-label">Est. Annual Energy Consumed</div>
-              <div class="stat-value" id="sb-energy">—</div>
-              <div class="stat-note">at 85% utilization</div>
-            </div>
-
-            <!-- 6 · Power capacity -->
-            <div class="stat-card">
-              <div class="stat-label">Total Power Capacity</div>
-              <div class="stat-value" id="sb-mw">—</div>
-              <div class="stat-note" id="sb-mw-imputed-note"></div>
-            </div>
-
+          <!-- Data Centers (no dropdown) -->
+          <div class="sb-count-row">
+            <span class="sb-count-label">Data Centers</span>
+            <span id="sb-count" class="sb-count-val">—</span>
           </div>
 
+          <!-- ── COST ───────────────────────────────────── -->
+          <div class="sb-group">
+            <div class="sb-group-title">Cost</div>
+
+            <details class="sb-item sb-item--bill">
+              <summary>
+                <span class="sb-item-label">Est. Annual Bill Increase</span>
+                <span class="sb-chevron">▸</span>
+              </summary>
+              <div class="sb-item-body">
+                <span id="sb-bill-increase" class="sb-item-val">—</span>
+                <div class="sb-item-note" id="sb-bill-note">per household / yr</div>
+                <div class="calc-subhead">How is this calculated?</div>
+                <div class="calc-body" id="sb-bill-calc">—</div>
+              </div>
+            </details>
+
+            <details class="sb-item">
+              <summary>
+                <span class="sb-item-label">Est. Annual Electricity Cost</span>
+                <span class="sb-chevron">▸</span>
+              </summary>
+              <div class="sb-item-body">
+                <span id="sb-cost" class="sb-item-val">—</span>
+                <div class="sb-item-note">Total paid by data centers at commercial rates</div>
+                <div class="sb-item-note">Rate: $70 / MWh</div>
+              </div>
+            </details>
+          </div>
+
+          <!-- ── ENVIRONMENTAL IMPACT ───────────────────── -->
+          <div class="sb-group">
+            <div class="sb-group-title">Environmental Impact</div>
+
+            <details class="sb-item sb-item--co2">
+              <summary>
+                <span class="sb-item-label">CO&#x2082; Emissions</span>
+                <span class="sb-chevron">▸</span>
+              </summary>
+              <div class="sb-item-body">
+                <span id="sb-co2" class="sb-item-val">—</span>
+                <div class="sb-item-note">386 kg CO&#x2082; per MWh (US avg grid intensity)</div>
+                <div class="sb-item-note warming-note">Each year's CO&#x2082; adds permanently to atmospheric concentration. Effects compound over centuries.</div>
+              </div>
+            </details>
+
+            <details class="sb-item sb-item--co2">
+              <summary>
+                <span class="sb-item-label">&#x2708; Cross-country Flights</span>
+                <span class="sb-chevron">▸</span>
+              </summary>
+              <div class="sb-item-body">
+                <span id="sb-eq-flights" class="sb-item-val">—</span>
+                <div class="sb-item-note">Equivalent CO&#x2082; to this many one-way NYC&#x2192;LA flights per year (0.24 t CO&#x2082; / passenger)</div>
+              </div>
+            </details>
+
+            <details class="sb-item sb-item--co2">
+              <summary>
+                <span class="sb-item-label">&#x1F6E2; Oil Barrels Burned</span>
+                <span class="sb-chevron">▸</span>
+              </summary>
+              <div class="sb-item-body">
+                <span id="sb-eq-barrels" class="sb-item-val">—</span>
+                <div class="sb-item-note">Equivalent CO&#x2082; to this many barrels of crude oil combusted per year (0.43 t CO&#x2082; / barrel)</div>
+              </div>
+            </details>
+
+            <details class="sb-item sb-item--co2">
+              <summary>
+                <span class="sb-item-label">&#x26AB; Tonnes Coal Burned</span>
+                <span class="sb-chevron">▸</span>
+              </summary>
+              <div class="sb-item-body">
+                <span id="sb-eq-coal" class="sb-item-val">—</span>
+                <div class="sb-item-note">Equivalent CO&#x2082; to this many metric tonnes of bituminous coal combusted per year (2.42 t CO&#x2082; / tonne)</div>
+              </div>
+            </details>
+          </div>
+
+          <!-- ── ENERGY ─────────────────────────────────── -->
+          <div class="sb-group">
+            <div class="sb-group-title">Energy</div>
+
+            <details class="sb-item">
+              <summary>
+                <span class="sb-item-label">Annual Energy Consumed</span>
+                <span class="sb-chevron">▸</span>
+              </summary>
+              <div class="sb-item-body">
+                <span id="sb-energy" class="sb-item-val">—</span>
+                <div class="sb-item-note">Estimated at 8% of nameplate capacity × 8,760 hrs</div>
+              </div>
+            </details>
+
+            <details class="sb-item">
+              <summary>
+                <span class="sb-item-label">Power Capacity</span>
+                <span class="sb-chevron">▸</span>
+              </summary>
+              <div class="sb-item-body">
+                <span id="sb-mw" class="sb-item-val">—</span>
+                <div class="sb-item-note">Nameplate MW · facilities without reported capacity imputed at 26 MW (P25 of reporting DCs)</div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Status breakdown -->
           <div id="sb-breakdown-section">
-            <div class="sb-section-title">By Status</div>
+            <div class="sb-group-title">By Status</div>
             <div id="sb-status-breakdown"></div>
           </div>
 
           <div id="sb-disclaimer">
-            &#x26A0; ~36% of facilities report MW capacity. Missing values imputed at 150 MW (dataset median). All figures are estimates.
+            &#x26A0; ~64% of facilities do not report MW capacity. Values imputed at 26 MW. All figures are estimates.
           </div>
+
         </aside>
       </div>
 

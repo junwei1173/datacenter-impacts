@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  // State names
+  // ── State abbreviation → full name ──────────────────────────────────────
   const STATE_ABBR = {
     AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",
     CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",
@@ -16,7 +16,7 @@
     WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"District of Columbia"
   };
 
-  // Operational level - orange shade
+  // ── Operational level → orange shade ────────────────────────────────────
   const STATUS_LEVEL = {
     "Operating":                             1.00,
     "Expanding":                             0.82,
@@ -33,7 +33,7 @@
     return d3.interpolateOranges(0.15 + level * 0.82);
   }
 
-  // MW parser - handles ranges like "100-200" and "150–1,000"
+  // ── MW parser: handles ranges like "100-200" and "150–1,000" ────────────
   function parseMW(str) {
     if (!str || !str.trim() || str.trim().toLowerCase() === "unknown") return null;
     const clean = str.replace(/,/g, "").trim();
@@ -43,17 +43,17 @@
     return null;
   }
 
-  // MW estimation
-  // IMPUTED_MW:
+  // ── MW estimation constants ──────────────────────────────────────────────
+  // IMPUTED_MW: P25 of all reporting DCs (524 facilities report).
   // The majority of non-reporting facilities are smaller/unknown DCs,
-  // so the lower usage (26 MW) is more representative than the median
-  // (150 MW, skewed by gaint campuses) for our purposes.
+  // so the lower quartile (26 MW) is more representative than the median
+  // (150 MW, skewed by hyperscale campuses) for imputation purposes.
   const IMPUTED_MW = 26;
 
-  // CAPACITY_FACTOR: nameplate - average grid draw.
-  // Accounts for  significant redundancy headroom baked
-  // into nameplate figures. Calibrated so PA's 98 DCs ~13.9% of PA grid
-  // -> ~$178/yr increase (target $150–$200/yr for PA).
+  // CAPACITY_FACTOR: nameplate → average grid draw.
+  // Accounts for IT utilization plus significant redundancy headroom baked
+  // into nameplate figures. Calibrated so PA's 98 DCs → ~13.9% of PA grid
+  // → ~$178/yr increase (target $150–$200/yr).
   const CAPACITY_FACTOR = 0.08;
   const HOURS_PER_YEAR  = 8760;
 
@@ -62,7 +62,7 @@
   // that would exceed the entire state grid on paper. Cap at 75%.
   const MAX_GRID_SHARE = 0.75;
 
-  // State electricity grids (EIA 2022, TWh - stored as MWh)
+  // ── State electricity grids (EIA 2022, TWh → stored as MWh) ────────────
   const STATE_GRID_MWH = {
     "Alabama":114e6,"Alaska":6e6,"Arizona":74e6,"Arkansas":48e6,
     "California":258e6,"Colorado":51e6,"Connecticut":29e6,"Delaware":11e6,
@@ -79,7 +79,7 @@
     "West Virginia":33e6,"Wisconsin":64e6,"Wyoming":13e6
   };
 
-  // State average monthly residential electricity bill (EIA 2022)
+  // ── State average monthly residential electricity bill (EIA 2022) ────────
   const STATE_AVG_BILL = {
     "Alabama":133,"Alaska":125,"Arizona":121,"Arkansas":109,"California":114,
     "Colorado":82,"Connecticut":164,"Delaware":105,"Florida":116,"Georgia":112,
@@ -95,16 +95,16 @@
   };
   const US_AVG_BILL = 144; // national average (EIA)
 
-  // Economic constants
+  // ── Economic constants ───────────────────────────────────────────────────
   const ELEC_USD_PER_MWH = 70; // commercial rate
   const CO2_KG_PER_MWH   = 386; // US average grid intensity
 
-  // CO2 equivalence factors (EPA)
+  // CO₂ equivalence factors (EPA)
   const CO2_T_PER_FLIGHT  = 0.24;  // 1-way cross-country flight per passenger
   const CO2_T_PER_BARREL  = 0.43;  // per barrel of crude oil burned
   const CO2_T_PER_COAL_T  = 2.42;  // per metric tonne of bituminous coal
 
-  // Formatters
+  // ── Formatters ───────────────────────────────────────────────────────────
   function fmt(n, dec = 0) {
     return n.toLocaleString("en-US", {
       minimumFractionDigits: dec,
@@ -137,17 +137,17 @@
     return fmt(n, 0);
   }
 
-  // Stats computation (state scope)
+  // ── Stats computation (state scope) ─────────────────────────────────────
   // stateName: full state name string, or null for a single-DC view
-  // allStateData: pre built map used for US-level pop weighted average
+  // allStateData: pre-built map used for US-level pop-weighted average
   function computeStats(centers, stateName) {
     const totalMW    = centers.reduce((s, d) => s + (parseMW(d.mw) ?? IMPUTED_MW), 0);
     const annualMWh  = totalMW * HOURS_PER_YEAR * CAPACITY_FACTOR;
     const co2Tonnes  = annualMWh * CO2_KG_PER_MWH / 1000;
     const costUSD    = annualMWh * ELEC_USD_PER_MWH;
 
-    // Bill increase
-    const gridMWh  = STATE_GRID_MWH[stateName]  ?? 50e6; // fallback median state mwh
+    // Bill increase — always use state-specific grid & bill if available
+    const gridMWh  = STATE_GRID_MWH[stateName]  ?? 50e6; // fallback ~median state
     const avgBill  = STATE_AVG_BILL[stateName]   ?? US_AVG_BILL;
 
     const rawShare    = annualMWh / gridMWh;
@@ -171,7 +171,7 @@
       `\n× avg annual bill ($${avgBill}/mo × 12 = $${avgBillYr})\n` +
       `= $${billDelta.toFixed(0)} / yr est. increase`;
 
-    // CO2 equivalents
+    // CO₂ equivalents
     const flights    = co2Tonnes / CO2_T_PER_FLIGHT;
     const oilBarrels = co2Tonnes / CO2_T_PER_BARREL;
     const coalTonnes = co2Tonnes / CO2_T_PER_COAL_T;
@@ -181,7 +181,7 @@
              flights, oilBarrels, coalTonnes };
   }
 
-  // US level pop weighted bill average
+  // ── US-level pop-weighted bill average ───────────────────────────────────
   // Builds one stats object whose billDelta is the population-weighted mean
   // of all state-level billDeltas.
   function computeUsStats(allCenters, statePopMap) {
@@ -223,39 +223,44 @@
              flights, oilBarrels, coalTonnes };
   }
 
-  // Sidebar updater
+  // ── Sidebar updater ──────────────────────────────────────────────────────
   function updateSidebar(title, s, detail) {
     const el = id => document.getElementById(id);
 
     el("sb-scope").textContent  = title;
     el("sb-detail").textContent = detail || "";
 
+    // Count
     el("sb-count").textContent = fmt(s.count);
 
+    // Cost › Bill increase
     el("sb-bill-increase").textContent =
       s.billDelta < 0.5 ? "< $1 / yr" : `$${Math.round(s.billDelta)} / yr`;
     el("sb-bill-calc").textContent = s.calcText;
 
+    // Cost › Annual electricity cost
     el("sb-cost").textContent = s.costUSD > 0
       ? (s.costUSD >= 1e9
           ? `$${fmt(s.costUSD / 1e9, 2)}B / yr`
           : `$${fmt(s.costUSD / 1e6, 1)}M / yr`)
       : "—";
 
-    el("sb-co2").textContent     = `${fmtCO2(s.co2Tonnes)} CO₂ / yr`;
-    el("sb-eq-flights").textContent  = fmtLarge(s.flights);
-    el("sb-eq-barrels").textContent  = fmtLarge(s.oilBarrels);
-    el("sb-eq-coal").textContent     = fmtLarge(s.coalTonnes);
+    // Environmental impact › CO₂ + equivalents
+    el("sb-co2").textContent        = s.co2Tonnes > 0 ? `${fmtCO2(s.co2Tonnes)} / yr` : "—";
+    el("sb-eq-flights").textContent = fmtLarge(s.flights);
+    el("sb-eq-barrels").textContent = fmtLarge(s.oilBarrels);
+    el("sb-eq-coal").textContent    = fmtLarge(s.coalTonnes);
 
+    // Energy › Annual consumed
     el("sb-energy").textContent = s.annualMWh > 0
       ? `${fmtEnergy(s.annualMWh)} / yr` : "—";
 
+    // Energy › Power capacity
     el("sb-mw").textContent = s.totalMW > 0
       ? `${fmt(Math.round(s.totalMW))} MW` : "—";
 
     // Status breakdown
     const counts = new Map();
-    // counts built from raw centers stored in s._centers
     (s._centers || []).forEach(d =>
       counts.set(d.status, (counts.get(d.status) || 0) + 1));
     const bEl = document.getElementById("sb-status-breakdown");
@@ -273,7 +278,7 @@
     });
   }
 
-  // Legend 
+  // ── Legend ───────────────────────────────────────────────────────────────
   function addLegend(svg, W, H) {
     const PAD   = 14;
     const ROW_H = 18;
@@ -319,7 +324,7 @@
       .text("State shading = # of data centers");
   }
 
-  // Main
+  // ── Main ─────────────────────────────────────────────────────────────────
   Promise.all([
     d3.json("./topo.json"),
     d3.csv("./data_centers.csv"),
@@ -330,13 +335,13 @@
     // Attach full state name to each DC
     data_centers.forEach(d => { d._stateName = STATE_ABBR[d.state] || d.state; });
 
-    // Population map: full name - number
+    // Population map: full name → number
     const statePopMap = new Map();
     states.forEach(s => statePopMap.set(s.State, +s.Population));
 
     const topo = topojson.feature(topology, topology.objects.states);
 
-    // Per-state DC count - red colour scale
+    // Per-state DC count → red colour scale (sqrt to reduce VA dominance)
     const stateDCCount = new Map();
     topo.features.forEach(f => stateDCCount.set(f.properties.name, 0));
     data_centers.forEach(d =>
@@ -348,7 +353,7 @@
     const stateColor = name =>
       redScale(Math.sqrt(stateDCCount.get(name) || 0));
 
-    // Pre-compute US level stats once
+    // Pre-compute US-level stats once
     const usStats = computeUsStats(data_centers, statePopMap);
     usStats._centers = data_centers;
 
@@ -370,7 +375,7 @@
 
     let currentK = 1;
 
-    // Click-to-lock state
+    // ── Click-to-lock state ─────────────────────────────────────────────
     let lockedEl   = null;
     let lockedType = null; // 'state' | 'dc'
 
@@ -424,12 +429,12 @@
         "Hover or click a state / data center");
     }
 
-    // Click on bare SVG background - unlock
+    // Click on bare SVG background → unlock
     svg.on("click", event => {
       if (event.target === svgEl) unlock();
     });
 
-    // Draw states
+    // ── Draw states ──────────────────────────────────────────────────────
     g.append("g").attr("class", "states-g")
       .selectAll("path")
       .data(topo.features)
@@ -471,7 +476,7 @@
             pop ? pop.toLocaleString("en-US") + " residents" : "State");
         });
 
-    // Draw data center dots
+    // ── Draw data center dots ─────────────────────────────────────────────
     g.append("g").attr("class", "dc-g")
       .selectAll("circle")
       .data(data_centers)
@@ -519,7 +524,7 @@
             `${d.facility_name}\n${d.city}, ${d.state}\n${d.status}` +
             (d.mw ? `\n${d.mw} MW` : `\nMW unknown (est. ${IMPUTED_MW} MW)`));
 
-    // Draw state capitals
+    // ── Draw state capitals ───────────────────────────────────────────────
     const cityG = g.append("g").attr("class", "cities-g");
 
     cityG.selectAll("circle").data(cities).join("circle")
@@ -541,10 +546,108 @@
       .attr("stroke", "rgba(255,252,248,0.88)").attr("stroke-width", "2.5px")
       .attr("stroke-linejoin", "round");
 
-    // Legend
+    // ── Legend ─────────────────────────────────────────────────────────────
     addLegend(svg, W, H);
 
-    // Zoom
+    // ── Data Center Alley annotation (Ashburn, VA) ────────────────────────
+    // Ashburn, Loudoun County, VA  ≈  39.0438°N  77.4875°W
+    const ashburnCoords = projection([-77.4875, 39.0438]);
+    if (ashburnCoords) {
+      const [ax, ay] = ashburnCoords;
+
+      // Arrow marker definition (black)
+      const defs = svg.select("defs").empty() ? svg.append("defs") : svg.select("defs");
+      const marker = defs.append("marker")
+        .attr("id", "arrow-head")
+        .attr("markerWidth", 10).attr("markerHeight", 10)
+        .attr("refX", 8).attr("refY", 5)
+        .attr("orient", "auto");
+      marker.append("path")
+        .attr("d", "M0,0 L0,10 L10,5 z")
+        .attr("fill", "#111");
+
+      const dcaG = g.append("g")
+        .attr("class", "dca-annotation")
+        .attr("id", "data-center-alley-label");
+
+      // ── Button / label box — Atlantic white space (right of East Coast) ──
+      // AlbersUSA leaves blank ocean space to the right of the East Coast.
+      // ~84% width / 42% height sits cleanly right of Virginia / Carolinas.
+      const btnX = W * 0.836;
+      const btnY = H * 0.415;
+      const btnW = 134;
+      const btnH = 26;
+
+      // Drop shadow rect
+      dcaG.append("rect")
+        .attr("x", btnX + 2).attr("y", btnY + 2)
+        .attr("width", btnW).attr("height", btnH).attr("rx", 5)
+        .attr("fill", "rgba(0,0,0,0.18)");
+
+      // Button fill
+      dcaG.append("rect")
+        .attr("class", "dca-label-box")
+        .attr("x", btnX).attr("y", btnY)
+        .attr("width", btnW).attr("height", btnH).attr("rx", 5)
+        .attr("fill", "#111").attr("stroke", "#111").attr("stroke-width", 1.5);
+
+      // Button text
+      dcaG.append("text")
+        .attr("class", "dca-label-text")
+        .attr("x", btnX + btnW / 2).attr("y", btnY + btnH / 2 + 1)
+        .attr("text-anchor", "middle").attr("dominant-baseline", "middle")
+        .attr("font-family", "Manrope, sans-serif")
+        .attr("font-size", "10px").attr("font-weight", "700")
+        .attr("letter-spacing", "0.08em")
+        .attr("fill", "white")
+        .text("DATA CENTER ALLEY");
+
+      // ── Curved arrow: exits the left side of the button, curves left
+      //    toward Ashburn star — travelling across the Atlantic white space ──
+      const arrowStartX = btnX;                      // left edge of button
+      const arrowStartY = btnY + btnH * 0.5;         // vertically centered
+      const arrowEndX   = ax + 9;
+      const arrowEndY   = ay;
+      // Control point: pull the curve slightly upward mid-way so it reads
+      // as a clean arc coming from the right
+      const cpX = (arrowStartX + arrowEndX) * 0.5 + 6;
+      const cpY = (arrowStartY + arrowEndY) * 0.5 - 22;
+
+      dcaG.append("path")
+        .attr("class", "dca-arrow")
+        .attr("d", `M${arrowStartX},${arrowStartY} Q${cpX},${cpY} ${arrowEndX},${arrowEndY}`)
+        .attr("stroke", "#111")
+        .attr("stroke-width", 2.5)
+        .attr("fill", "none")
+        .attr("marker-end", "url(#arrow-head)");
+
+      // ── Star at Ashburn — large, gold, prominent ───────────────────────
+      const starPath = d3.symbol().type(d3.symbolStar).size(220)();
+      dcaG.append("path")
+        .attr("class", "dca-star")
+        .attr("d", starPath)
+        .attr("transform", `translate(${ax},${ay})`)
+        .attr("fill", "#FFD700")
+        .attr("stroke", "#222")
+        .attr("stroke-width", 1.5);
+
+      // ── "Ashburn, Loudoun County" label next to the star ───────────────
+      // Small italic label slightly below-right of the star
+      dcaG.append("text")
+        .attr("class", "dca-place-label")
+        .attr("x", ax + 12).attr("y", ay + 5)
+        .attr("font-family", "Manrope, sans-serif")
+        .attr("font-size", "9px").attr("font-weight", "600")
+        .attr("fill", "#111")
+        .attr("paint-order", "stroke")
+        .attr("stroke", "rgba(255,252,248,0.9)").attr("stroke-width", "3px")
+        .attr("stroke-linejoin", "round");
+
+      // ── Scale everything correctly on zoom ─────────────────────────────
+      // (handled in zoom handler below)
+    }
+
+    // ── Zoom ───────────────────────────────────────────────────────────────
     const zoom = d3.zoom()
       .scaleExtent([1, 8])
       .on("zoom", event => {
@@ -568,6 +671,26 @@
           .attr("stroke-width", function () {
             return (this === lockedEl ? 2.2 : 0.7) / currentK + "px";
           });
+
+        // Scale the DCA annotation so it stays legible at all zoom levels
+        const dcaG = g.select(".dca-annotation");
+        if (!dcaG.empty()) {
+          const k = currentK;
+          // Button and text scale down as we zoom in
+          dcaG.selectAll(".dca-label-box").attr("stroke-width", 1.5 / k);
+          dcaG.select(".dca-label-text").attr("font-size", 10 / k + "px");
+          dcaG.select(".dca-arrow").attr("stroke-width", 2.5 / k);
+
+          // Star stays fixed size in screen space
+          const ashburn = projection([-77.4875, 39.0438]);
+          if (ashburn) {
+            dcaG.select(".dca-star")
+              .attr("transform", `translate(${ashburn[0]},${ashburn[1]}) scale(${1 / k})`);
+          }
+          dcaG.select(".dca-place-label")
+            .attr("font-size", 9 / k + "px")
+            .attr("stroke-width", 3 / k + "px");
+        }
       });
 
     svg.call(zoom);
