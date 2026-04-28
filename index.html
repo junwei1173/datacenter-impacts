@@ -6,29 +6,107 @@
     <title>Data Centers and Climate Impact</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
   </head>
   <body>
     <div class="page-bg" aria-hidden="true"></div>
-
     <header class="hero" id="top">
-      <h1>Data Centers and Climate Impact</h1>
-      <p class="lead">
-        As interest in AI and LLMs grow, an abundance of data centers are being built, raising concerns for
-        their impacts on resource consumption and the environment.
-      </p>
-      
-   
+      <h1>Data Centers &amp; Climate Impact</h1>
+      <p class="lead">As interest in AI and LLMs grow, an abundance of data centers are being built, raising concerns for their impacts on resource consumption and the environment.</p>
+
+      <div id="map_container">
+        <div id="map_wrapper">
+          <svg id="map"></svg>
+          <div id="zoom-hint">Scroll to zoom &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Click to pin</div>
+        </div>
+
+        <aside id="sidebar">
+          <div id="sb-header">
+            <div id="sb-scope">United States</div>
+            <div id="sb-detail">Hover or click a state / data center</div>
+          </div>
+
+          <div id="sb-stats">
+
+            <!-- 1 · Data centers -->
+            <div class="stat-card">
+              <div class="stat-label">Data Centers</div>
+              <div class="stat-value" id="sb-count">—</div>
+            </div>
+
+            <!-- 2 · Avg bill increase -->
+            <div class="stat-card stat-card--bill">
+              <div class="stat-label">Est. Avg Annual Bill Increase</div>
+              <div class="stat-value" id="sb-bill-increase">—</div>
+              <div class="stat-note" id="sb-bill-note">per household / yr</div>
+              <details class="calc-details">
+                <summary>How is this calculated?</summary>
+                <div class="calc-body" id="sb-bill-calc">—</div>
+              </details>
+            </div>
+
+            <!-- 3 · Annual electricity cost -->
+            <div class="stat-card">
+              <div class="stat-label">Est. Annual Electricity Cost</div>
+              <div class="stat-value" id="sb-cost">—</div>
+              <div class="stat-note">at $70 / MWh commercial rate</div>
+            </div>
+
+            <!-- 4 · CO2 + equivalents -->
+            <div class="stat-card stat-card--co2">
+              <div class="stat-label">Est. Annual CO&#x2082; Emissions</div>
+              <div class="stat-value" id="sb-co2">—</div>
+              <div class="stat-note">386 kg / MWh US grid avg</div>
+              <div class="warming-block">
+                <div class="warming-block-title">How this heats the Earth</div>
+                <div class="warming-row">
+                  <span class="warming-icon">&#x2708;</span>
+                  <div><span id="sb-eq-flights" class="warming-value">—</span><span class="warming-label"> cross-country flights / yr</span></div>
+                </div>
+                <div class="warming-row">
+                  <span class="warming-icon">&#x1F6E2;</span>
+                  <div><span id="sb-eq-barrels" class="warming-value">—</span><span class="warming-label"> oil barrels burned / yr</span></div>
+                </div>
+                <div class="warming-row">
+                  <span class="warming-icon">&#x26AB;</span>
+                  <div><span id="sb-eq-coal" class="warming-value">—</span><span class="warming-label"> tonnes coal burned / yr</span></div>
+                </div>
+                <div class="warming-note">Each year's CO&#x2082; adds permanently to atmospheric concentration. Effects compound over centuries.</div>
+              </div>
+            </div>
+
+            <!-- 5 · Annual energy consumed -->
+            <div class="stat-card">
+              <div class="stat-label">Est. Annual Energy Consumed</div>
+              <div class="stat-value" id="sb-energy">—</div>
+              <div class="stat-note">at 85% utilization</div>
+            </div>
+
+            <!-- 6 · Power capacity -->
+            <div class="stat-card">
+              <div class="stat-label">Total Power Capacity</div>
+              <div class="stat-value" id="sb-mw">—</div>
+              <div class="stat-note" id="sb-mw-imputed-note"></div>
+            </div>
+
+          </div>
+
+          <div id="sb-breakdown-section">
+            <div class="sb-section-title">By Status</div>
+            <div id="sb-status-breakdown"></div>
+          </div>
+
+          <div id="sb-disclaimer">
+            &#x26A0; ~36% of facilities report MW capacity. Missing values imputed at 150 MW (dataset median). All figures are estimates.
+          </div>
+        </aside>
+      </div>
+
+      <script src="./script.js"></script>
+      <script src="./map.js"></script>
     </header>
-
-    <svg class="hero" id="viz1" width="95vw" height="100vh"></svg>
   </body>
-
-  <script src="https://unpkg.com/topojson@3"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.7.0/d3.min.js"></script>
-  <script src="./script.js"></script>
 </html>
