@@ -15,11 +15,23 @@
   <body>
     <div class="page-bg" aria-hidden="true"></div>
     <header class="hero" id="top">
-      <h1>Data Centers and Climate Impact</h1>
-      <p class="lead">
-        As interest in AI and LLMs grow, an abundance of data centers are being built, raising concerns for
-        their impacts on resource consumption and the environment.
-      </p>
+      <h1>Data Centers and Their Climate Impact</h1>
+
+      <section class="news-brief" aria-labelledby="news-brief-title">
+        <figure class="news-brief-media">
+          <img src="./datacenter.jpg" alt="Aerial view of a large data center complex with electrical infrastructure nearby" />
+        </figure>
+
+        <article class="news-brief-copy">
+          <h2 id="news-brief-title">America’s data center boom is reshaping the grid</h2>
+          <p>As interest in AI and LLMs grow, an abundance of data centers are being built, raising concerns for their impacts on resource consumption and the environment.</p>
+          <p>
+            They are spreading quickly across the country, and the impact is showing up in power demand,
+            carbon emissions, local utility bills, and energy consumption. Our visualization maps where facilities are
+            concentrated and estimates the potential impacts of that growth across the US.
+          </p>
+        </article>
+      </section>
 
       <div id="map_container">
         <div id="map_wrapper">
@@ -108,19 +120,22 @@
           </div>
         </aside>
       </div>
-    </header>
 
-    <section class="viz-container">
+       <section class="viz-container">
       <div class="map-wrapper">
         <svg id="viz2"></svg>
       </div>
     
       <aside class="side-panel">
         <div class="toggle-header">
-          <h3>Simulation Tools</h3>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button id="back-to-national" title="Back to National Map">←</button>
+            <h3 style="margin: 0;">Ashburn, Virginia</h3>
+          </div>
+          
           <div class="switch-container">
             <label class="switch">
-              <input type="checkbox" id="map-toggle" autocomplete="off" checked>
+              <input type="checkbox" id="map-toggle" autocomplete="off">
               <span class="slider round"></span>
             </label>
             <span id="toggle-label">Real Map</span>
@@ -167,10 +182,22 @@
         </div>
 
         <div id="sim-controls" style="display: none;">
-          <button id="add-dc-btn" class="cta" style="width: 100%; padding: 0.6rem; font-size: 0.9rem; border: none; cursor: pointer;">
+          <button id="add-dc-btn" class="btn-secondary" style="color: #163024; width: 100%; padding: 0.6rem; cursor: pointer; margin-bottom: 0.5rem;">
             + Add New Center
           </button>
-
+          
+          <div class="action-row">
+            <button id="reset-dc-btn" class="btn-secondary">Reset to Real</button>
+            <button id="clear-dc-btn" class="btn-danger">Clear All</button>
+          </div>
+        
+          <div class="clear-grid">
+            <button class="btn-danger-outline" data-clear="Operating">Clear Operating</button>
+            <button class="btn-danger-outline" data-clear="Approved/Permitted/Under construction">Clear In Dev</button>
+            <button class="btn-danger-outline" data-clear="Proposed">Clear Proposed</button>
+            <button class="btn-danger-outline" data-clear="Expanding">Clear Expanding</button>
+          </div>
+        
           <div class="inventory-list" id="dc-inventory">
             </div>
         </div>
@@ -187,6 +214,7 @@
         </div>
       </aside>
     </section>
+    </header>
 
     <script src="./map.js"></script>
     <script src="./script.js" type="module"></script>

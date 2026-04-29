@@ -541,6 +541,84 @@
       .attr("stroke", "rgba(255,252,248,0.88)").attr("stroke-width", "2.5px")
       .attr("stroke-linejoin", "round");
 
+
+    // --- NEW: Ashburn Transition Marker ---
+    const ashburnCoords = projection([-77.4874, 39.0438]); 
+    
+    if (ashburnCoords) {
+      const ashburnG = g.append("g")
+        .attr("class", "ashburn-g")
+        .attr("transform", `translate(${ashburnCoords[0]}, ${ashburnCoords[1]})`)
+        .style("cursor", "pointer")
+        .on("mouseenter", function() {
+            d3.select(this).select("text").attr("fill", "#c04828"); 
+        })
+        .on("mouseleave", function() {
+            d3.select(this).select("text").attr("fill", "#163024");
+        })
+        .on("click", function(event) {
+            event.stopPropagation(); 
+            
+            const nationalMap = document.getElementById('map_container');
+            const localMap = document.querySelector('.viz-container');
+
+            // 1. Fade out national map
+            nationalMap.style.opacity = '0';
+
+            // 2. Wait for the fade to finish (500ms matches CSS)
+            setTimeout(() => {
+                // Swap the physical space they take up
+                nationalMap.style.display = 'none';
+                localMap.style.display = 'flex'; 
+
+                // 3. Tiny delay to ensure the browser registers the display change before fading in
+                setTimeout(() => {
+                    document.querySelector('.viz-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    localMap.style.opacity = '1';
+                }, 50);
+            }, 500); 
+        });
+
+      // 1. Create a single, permanent pulse ring
+      const pulseRing = ashburnG.append("circle")
+        .attr("class", "pulse-ring")
+        .attr("fill", "none")
+        .attr("stroke", "#ffea00")
+        .attr("pointer-events", "none");
+
+      // 2. Loop it safely (reading currentK dynamically so zoom doesn't break it)
+      function triggerPulse() {
+        pulseRing
+          .attr("stroke-width", 2 / currentK + "px")
+          .attr("r", 8 / currentK)
+          .attr("opacity", 1)
+          .transition()
+          .duration(2500)
+          .attr("r", 40 / currentK) // Pulses out much wider now
+          .attr("opacity", 0)
+          .on("end", triggerPulse); // Loops endlessly
+      }
+      triggerPulse();
+
+      // 3. Main yellow dot (Bigger)
+      ashburnG.append("circle")
+        .attr("class", "ashburn-dot")
+        .attr("r", 5) // Increased from 5
+        .attr("fill", "#ffea00")
+        .attr("stroke", "#163024")
+        .attr("stroke-width", "1.5px");
+
+      // 4. Label (Bigger and shifted right)
+      ashburnG.append("text")
+        .attr("class", "ashburn-label")
+        .text("Explore Ashburn, VA")
+        .attr("x", 16) // Shifted to accommodate the larger dot
+        .attr("y", 4)
+        .attr("font-size", "18px") // Increased for readability
+        .attr("font-weight", "800")
+        .attr("fill", "#163024")
+        .style("text-shadow", "1px 1px 2px #fff, -1px -1px 2px #fff, 1px -1px 2px #fff, -1px 1px 2px #fff");
+    }
     // Legend
     addLegend(svg, W, H);
 
@@ -568,6 +646,11 @@
           .attr("stroke-width", function () {
             return (this === lockedEl ? 2.2 : 0.7) / currentK + "px";
           });
+
+        //ASHBURN MARKER SCALING
+        g.selectAll(".ashburn-dot").attr("r", 5 / currentK).attr("stroke-width", 1.5 / currentK + "px");
+        g.selectAll(".pulse-ring").attr("stroke-width", 2 / currentK + "px");
+        g.selectAll(".ashburn-label").attr("font-size", 18 / currentK + "px").attr("x", 12 / currentK).attr("y", 4 / currentK);
       });
 
     svg.call(zoom);
