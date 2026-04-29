@@ -306,3 +306,32 @@ h1 {
   #map_wrapper   { height: 55vw; min-height: 260px; }
   #sidebar       { width: 100%; border-left: none; border-top: 1px solid var(--line); }
 }
+
+/* --- Cross-Fade Transition Styles --- */
+#map_container {
+  transition: opacity 0.5s ease;
+  opacity: 1;
+}
+
+.viz-container {
+  /* It keeps all your existing layout rules, we just add these three: */
+  display: none; 
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Back Button Styling */
+#back-to-national {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--moss);
+  font-size: 1.2rem;
+  padding: 0;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+#back-to-national:hover {
+  color: var(--forest-deep);
+}

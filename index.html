@@ -108,16 +108,19 @@
           </div>
         </aside>
       </div>
-    </header>
 
-    <section class="viz-container">
+       <section class="viz-container">
       <div class="map-wrapper">
         <svg id="viz2"></svg>
       </div>
     
       <aside class="side-panel">
         <div class="toggle-header">
-          <h3>Ashburn, Virginia</h3>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button id="back-to-national" title="Back to National Map">←</button>
+            <h3 style="margin: 0;">Ashburn, Virginia</h3>
+          </div>
+          
           <div class="switch-container">
             <label class="switch">
               <input type="checkbox" id="map-toggle" autocomplete="off">
@@ -199,6 +202,7 @@
         </div>
       </aside>
     </section>
+    </header>
 
     <script src="./map.js"></script>
     <script src="./script.js" type="module"></script>

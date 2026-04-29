@@ -1,5 +1,5 @@
 .viz-container {
-  display: flex; width: 95vw; height: 85vh; margin: 2rem auto;
+  display: hidden; width: 95vw; height: 100vh; margin: 2rem auto; margin-bottom: 0;
   background: var(--mist); border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
   max-width: 140vh;
 }

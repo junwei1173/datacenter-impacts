@@ -151,6 +151,24 @@ function setupToggle() {
         updateViz();
         updateInventoryUI();
     });
+
+    document.getElementById("back-to-national").addEventListener("click", () => {
+        const nationalMap = document.getElementById('map_container');
+        const localMap = document.querySelector('.viz-container');
+
+        // 1. Fade out the simulation map
+        localMap.style.opacity = '0';
+
+        // 2. Wait for fade, swap displays, and fade the national map back in
+        setTimeout(() => {
+            localMap.style.display = 'none';
+            nationalMap.style.display = 'flex'; // Restores the national map's flexbox layout
+
+            setTimeout(() => {
+                nationalMap.style.opacity = '1';
+            }, 50);
+        }, 500);
+    });
 }
 
 function updateViz() {
@@ -269,9 +287,7 @@ function updateInventoryUI() {
         
         const header = card.append("div").attr("class", "card-header")
             .on("click", function() {
-                const body = card.append("div")
-                    .attr("class", "card-body")
-                    .classed("open", dc.id === selectedCenterId);
+                const body = d3.select(this.nextSibling);
                 const isNowOpen = !body.classed("open");
                 
                 // 1. Close all other cards to keep the UI clean (Optional, but highly recommended)
