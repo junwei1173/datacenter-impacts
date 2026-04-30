@@ -20,14 +20,88 @@
 
 /* --- Side Panel & Simulation UI --- */
 .side-panel {
-  flex: 1; /* This will now stretch to fill whatever space the map doesn't use */
+  flex: 1; 
   padding: 1.5rem; 
   background: #fff; 
   border-left: 1px solid var(--line);
   display: flex; 
   flex-direction: column; 
   gap: 0rem;
+  position: relative;
 }
+
+#dc-detail-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--paper); 
+  z-index: 100;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+#close-detail-btn {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: var(--mist);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--moss);
+  transition: all 0.2s;
+}
+
+#close-detail-btn:hover {
+  background: #ffe0e0;
+  color: #cc0000;
+  border-color: #ffcccc;
+}
+
+#detail-name {
+  margin: 0 0 0.5rem 0;
+  font-family: "Fraunces", serif;
+  font-size: 1.35rem;
+  color: var(--forest-deep);
+  line-height: 1.1;
+  padding-right: 2rem; /* Prevents text from overlapping the close button */
+}
+
+#detail-address {
+  margin: 0 0 0.5rem 0;
+  font-family: "Fraunces", serif;
+  font-size: 0.8rem;
+  color: var(--forest-deep);
+  padding-right: 0.5rem; /* Prevents text from overlapping the close button */
+}
+
+.detail-tag {
+  align-self: flex-start;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-item { display: flex; flex-direction: column; }
+.detail-label { font-size: 0.65rem; color: var(--moss); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+.detail-val { font-size: 1.1rem; color: var(--ink); font-weight: 600; }
 
 /* Add this new rule so the parent container can stretch */
 #sim-controls {

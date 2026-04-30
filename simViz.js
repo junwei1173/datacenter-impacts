@@ -4,15 +4,89 @@ var dataCenters = [];
 var simData = [];
 var simulatedCenterID = 1;
 var selectedCenterId = null;
+var medianMW = 0;
 
 export function applySimulationViz(data) {
     dataCenters = data;
+
+    medianMW = calculateRobustMedian(data);
 
     resetSimData();
     
     setupToggle();
     updateViz();
     updateInventoryUI();
+}
+
+
+function parseMW(str) {
+    if (!str || !String(str).trim() || String(str).trim().toLowerCase() === "unknown") return null;
+    const clean = String(str).replace(/,/g, "").trim();
+    const parts = clean.split(/[-–]/).map(s => parseFloat(s)).filter(n => !isNaN(n));
+    if (parts.length >= 2) return (parts[0] + parts[1]) / 2;
+    if (parts.length === 1) return parts[0];
+    return null;
+}
+
+
+function getFacilityMW(d) {
+    // 1. Try parsing explicit MW
+    const parsed = parseMW(d.mw);
+    if (parsed !== null && parsed > 0) return parsed;
+    
+    // 2. Try Size Rank
+    if (d.sizerank && d.sizerank !== "Unknown" && sizeToMW.has(d.sizerank)) {
+        return sizeToMW.get(d.sizerank);
+    }
+    
+    // 3. Try Acreage (Safely checks both 'acres' and 'property_size_acres')
+    const acresStr = d.property_size_acres || d.acres;
+    if (acresStr && !isNaN(acresStr) && Number(acresStr) > 0) {
+        const est = estimateMwFromAcres(acresStr);
+        if (est !== null) return est;
+    }
+    
+    // 4. Ultimate Fallback
+    return medianMW;
+}
+
+function estimateMwFromAcres(acres) {
+    const rawAcres = Number(acres);
+    if (isNaN(rawAcres) || rawAcres <= 0) return null;
+
+    const sqFt = rawAcres * 43560;
+    const whiteSpaceSqFt = sqFt * 0.50; // Assume 50% is usable server floor
+    const totalWatts = whiteSpaceSqFt * 100; // 100 watts per usable sq ft
+
+    return totalWatts / 1000000; // Convert to Megawatts
+}
+
+//Calculates median using the data supplied values, or estimated acres of the data center
+function calculateRobustMedian(data) {
+    const validMWs = [];
+
+    data.forEach(d => {
+        // Use our new safe parser instead of Number()
+        const parsedMW = parseMW(d.mw);
+
+        if (parsedMW !== null && parsedMW > 0) {
+            validMWs.push(parsedMW);
+        } else {
+            const acresStr = d.property_size_acres || d.acres;
+            if (acresStr && !isNaN(acresStr) && Number(acresStr) > 0) {
+                const estimatedMW = estimateMwFromAcres(acresStr);
+                if (estimatedMW !== null) validMWs.push(estimatedMW);
+            }
+        }
+    });
+
+    if (validMWs.length === 0) return 26;
+    validMWs.sort((a, b) => a - b);
+    const mid = Math.floor(validMWs.length / 2);
+    
+    return validMWs.length % 2 !== 0 
+        ? validMWs[mid] 
+        : (validMWs[mid - 1] + validMWs[mid]) / 2;
 }
 
 const colorScale = d3.scaleOrdinal()
@@ -55,8 +129,6 @@ function getCategoryFromMW(mw) {
     return "Mega Campus";
 }
 
-
-
 function resetSimData() {
     simData = dataCenters
         .filter(d => 
@@ -65,21 +137,16 @@ function resetSimData() {
             +d.lat >= mapBounds.minLat && +d.lat <= mapBounds.maxLat
         )
         .map(d => {
-            let initialMW = 5; 
-            if (d.mw !== "") {
-                initialMW = Number(d.mw);
-            } else if (d.sizerank !== "Unknown" && sizeToMW.has(d.sizerank)) {
-                initialMW = sizeToMW.get(d.sizerank);
-            }
+            let centerMW = getFacilityMW(d); 
 
             return {
                 id: `SIM-${d.id}`, 
                 name: d.facility_name,
                 long: +d.long,
                 lat: +d.lat,
-                mw: initialMW,
+                mw: centerMW,
                 status: d.status,
-                type: getCategoryFromMW(initialMW)
+                type: getCategoryFromMW(centerMW)
             };
         });
 }
@@ -93,6 +160,9 @@ function setupToggle() {
     d3.select("#map-toggle").on("change", function(event) {
         isSimMode = event.target.checked;
         selectedCenterId = null;
+
+        d3.select("#dc-detail-overlay").style("display", "none");
+
         d3.select("#toggle-label").text(isSimMode ? "Simulation" : "Real Map");
         d3.select("#sim-controls").style("display", isSimMode ? "flex" : "none");
         d3.select("#real-controls").style("display", isSimMode ? "none" : "block");
@@ -169,6 +239,16 @@ function setupToggle() {
             }, 50);
         }, 500);
     });
+
+    d3.select("#close-detail-btn").on("click", () => {
+        d3.select("#dc-detail-overlay").style("display", "none");
+        selectedCenterId = null;
+        
+        // Remove map highlight
+        d3.select("#viz2").selectAll(".node")
+          .attr("stroke", "#fff")
+          .attr("stroke-width", 3);
+    });
 }
 
 function updateViz() {
@@ -239,7 +319,7 @@ function renderNodes(svg, data, xScale, yScale) {
         .transition().duration(400)
         .attr("cx", d => xScale(+d.long))
         .attr("cy", d => yScale(+d.lat))
-        .attr("r", d => isSimMode ? mwScale(d.mw) : mwScale(sizeToMW.get(d.sizerank)))
+        .attr("r", d => mwScale(d.mw))
         .attr("fill", d => d.status != "Custom" ? colorScale(d.status) : "orange")
         .attr("stroke", d => d.id === selectedCenterId ? "#000" : "#fff")
         .attr("stroke-width", d => d.id === selectedCenterId ? 6 : 3)
@@ -272,6 +352,69 @@ function renderNodes(svg, data, xScale, yScale) {
                 targetCard.node().scrollIntoView({ behavior: "smooth", block: "center" });
             }
         });
+
+    enter.merge(nodes)
+        .style("cursor", "pointer")
+        .on("click", function(event, d) {
+            event.stopPropagation(); 
+            
+            selectedCenterId = d.id;
+
+            // 1. Instantly highlight the map dot
+            svg.selectAll(".node")
+                .attr("stroke", node => node.id === selectedCenterId ? "#000" : "#fff")
+                .attr("stroke-width", node => node.id === selectedCenterId ? 6 : 3);
+            d3.select(this).raise();
+
+            if (isSimMode) {
+                // SIMULATION MODE: Handle sidebar list scrolling
+                d3.selectAll(".card-body").classed("open", false);
+                d3.selectAll(".dc-card").style("border-color", "var(--line)");
+
+                const targetCard = d3.select(`#card-${d.id}`);
+                if (!targetCard.empty()) {
+                    targetCard.style("border-color", "var(--forest)");
+                    targetCard.select(".card-body").classed("open", true);
+                    targetCard.node().scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+            } else {
+                // REAL MAP MODE: Handle the new overlay
+                showRealDataOverlay(d);
+            }
+        });
+}
+
+// ... Place this helper function anywhere at the bottom of your simViz.js file:
+function showRealDataOverlay(d) {
+    const overlay = d3.select("#dc-detail-overlay");
+    overlay.style("display", "flex"); 
+    
+    // Name
+    d3.select("#detail-name").text(d.facility_name || d.name || "Unknown Facility");
+    // Address
+    d3.select("#detail-address").text(d.address || "Address unavailable");
+    
+    // Status Tag
+    const statusColor = colorScale(d.status) || "gray";
+    d3.select("#detail-status")
+      .text(statusRemap.get(d.status) || d.status)
+      .style("background", statusColor)
+      .style("color", "white"); 
+      
+    // Figure out the MW logically
+    let isEstimate = parseMW(d.mw) === null;
+    let mwVal = getFacilityMW(d);
+    
+    d3.select("#detail-mw").text(isEstimate ? `Est. ${mwVal} MW` : `${mwVal} MW`)
+    d3.select("#detail-city").text(d.city || "Ashburn");
+    d3.select("#detail-size").text(d.property_size_acres || "-");
+
+    // Single-node resource math
+    const annualTW = mwVal * 0.00876 * 0.85; 
+    const waterGallons = Math.round(annualTW * 500); 
+
+    d3.select("#detail-energy").text(`${annualTW.toFixed(2)} TW / yr`);
+    d3.select("#detail-water").text(`${waterGallons.toLocaleString()} M Gal / yr`);
 }
 
 // --- UI AND MATH UPDATES ---
@@ -390,23 +533,17 @@ function updateInventoryUI() {
 }
 
 function calculateTotals(data) {
-    const totalMW = isSimMode ? data.reduce((s, d) => s + d.mw, 0) : data.reduce((s, d) => {
-        if(d.mw !== "") {
-            return s + Number(d.mw);
-        }
-        if(d.sizerank !== "Unknown") {
-            return s + sizeToMW.get(d.sizerank);
-        }
-        return s + 5;
-        }, 0
-    );
+    const totalMW = isSimMode 
+        ? data.reduce((s, d) => s + d.mw, 0) 
+        : data.reduce((s, d) => s + getFacilityMW(d), 0);
     
-    // Conver to yearly TW hours at 85 % utilization
     const annualTW = totalMW * 0.00876 * 0.85; 
     const waterGallons = Math.round(annualTW * 500); 
 
+    console.log(annualTW);
+
     d3.select("#energy-val").text(`${annualTW.toFixed(2)} TW / yr`);
-    d3.select("#cost-val").text(`${waterGallons.toLocaleString()} M Gal / yr`);
+    d3.select("#water-val").text(`${waterGallons.toLocaleString()} M Gal / yr`);
 }
 
 function renderStatusChart(data) {

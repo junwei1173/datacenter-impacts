@@ -201,15 +201,40 @@
           <div class="inventory-list" id="dc-inventory">
             </div>
         </div>
-      
-        <div class="stats-group">
-          <div class="stat-item">
-            <span class="label">Total Energy Load</span>
-            <span class="value" id="energy-val">0 TW / yr</span>
+
+        <div id="dc-detail-overlay" style="display: none;">
+          <button id="close-detail-btn" title="Close Details">✕</button>
+          
+          <h3 id="detail-name">Facility Name</h3>
+          <h3 id="detail-address">Facility Address</h3>
+          <span id="detail-status" class="detail-tag">Operating</span>
+          
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Capacity</span>
+              <span class="detail-val" id="detail-mw">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">City</span>
+              <span class="detail-val" id="detail-city">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Size (acres)</span>
+              <span class="detail-val" id="detail-size">—</span>
+            </div>
           </div>
-          <div class="stat-item">
-            <span class="label">Est. Cooling Water</span>
-            <span class="value" id="cost-val">0 Gal / yr</span>
+          </div>
+
+          
+          <div class="stats-group" style="margin-top: auto; padding-top: 1rem; border-top: 2px solid var(--line);">
+            <div class="stat-item">
+              <span class="label">Est. Energy Load</span>
+              <span class="value" id="energy-val">0 TW / yr</span>
+            </div>
+            <div class="stat-item">
+              <span class="label">Est. Cooling Water</span>
+              <span class="value" id="water-val">0 M Gal / yr</span>
+            </div>
           </div>
         </div>
       </aside>
