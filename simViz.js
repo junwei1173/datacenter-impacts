@@ -256,12 +256,12 @@ function updateViz() {
     const viewWidth = 1280, viewHeight = 1280;
     
     svg.attr("viewBox", `0 0 ${viewWidth} ${viewHeight}`)
-       .attr("preserveAspectRatio", "xMidYMid meet");
+       .attr("preserveAspectRatio", "xMidYMid slice");
 
     if (svg.select("image").empty()) {
         svg.append("image")
            .attr("xlink:href", "./ashburnMap.png")
-           .attr("width", viewWidth).attr("height", viewHeight);
+           .attr("width", viewWidth).attr("height", viewHeight)
     }
 
     const xScale = d3.scaleLinear().domain([mapBounds.minLon, mapBounds.maxLon]).range([0, viewWidth]);
@@ -533,17 +533,39 @@ function updateInventoryUI() {
 }
 
 function calculateTotals(data) {
-    const totalMW = isSimMode 
-        ? data.reduce((s, d) => s + d.mw, 0) 
-        : data.reduce((s, d) => s + getFacilityMW(d), 0);
+    const totalAnnualTW = data.reduce((sum, d) => {
+        const mwVal = getFacilityMW(d); 
+        
+        // Dynamic utilization based on facility size
+        let utilization = 0.50; 
+        if (mwVal >= 100) utilization = 0.85; 
+        else if (mwVal >= 50) utilization = 0.65; 
+
+        const facilityTW = mwVal * 0.00876 * utilization;
+        return sum + facilityTW;
+    }, 0);
     
-    const annualTW = totalMW * 0.00876 * 0.85; 
-    const waterGallons = Math.round(annualTW * 500); 
+    // 1. Water Calculation
+    const waterGallons = Math.round(totalAnnualTW * 500); 
 
-    console.log(annualTW);
+    // 2. Conversion for Standard Math
+    const totalAnnualMWh = totalAnnualTW * 1000000; 
 
-    d3.select("#energy-val").text(`${annualTW.toFixed(2)} TW / yr`);
+    // 3. CO2 Calculation (386 kg per MWh)
+    const co2Tonnes = (totalAnnualMWh * 386) / 1000;
+    const co2MegaTonnes = co2Tonnes / 1000000; // Converted to Megatonnes for clean UI
+
+    // 4. VA Bill Increase Calculation
+    const vaGridMWh = 120000000; // Virginia's total grid capacity from map.js
+    const vaAvgBillYr = 110 * 12; // $110/mo * 12 months
+    const gridShare = totalAnnualMWh / vaGridMWh;
+    const billDelta = gridShare * vaAvgBillYr;
+
+    // Update the UI
+    d3.select("#energy-val").text(`${totalAnnualTW.toFixed(2)} TW / yr`);
     d3.select("#water-val").text(`${waterGallons.toLocaleString()} M Gal / yr`);
+    d3.select("#co2-val").text(`${co2MegaTonnes.toFixed(2)} Mt / yr`);
+    d3.select("#bill-val").text(`+$${Math.round(billDelta)} / yr`);
 }
 
 function renderStatusChart(data) {

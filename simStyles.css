@@ -148,10 +148,53 @@
 input:checked + .slider { background-color: var(--forest); }
 input:checked + .slider:before { transform: translateX(16px); }
 
-.stats-group { border-top: 2px solid var(--line); padding-top: 1rem; margin-top: auto; }
-.stat-item .label { display: block; font-size: 0.7rem; text-transform: uppercase; color: var(--moss); font-weight: 700; }
-.stat-item .value { font-family: "Fraunces", serif; font-size: 1.4rem; color: var(--forest-deep); }
+/* --- Updated Full-Width Stat Rows --- */
+.stats-group { 
+  border-top: 2px solid var(--line); 
+  padding-top: 1.2rem; 
+  margin-top: auto; 
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem; /* Space between each stacked card */
+}
 
+/* Give each stat its own card background */
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  background: var(--mist); 
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+/* Match the color-coding from your national map */
+.stat-item.stat-card--co2 {
+  background: #fff4f0;
+  border-color: #f0bfaa;
+}
+
+.stat-item.stat-card--bill {
+  background: #fffbf0;
+  border-color: #e8d49a;
+}
+
+.stat-item .label { 
+  display: block; 
+  font-size: 0.75rem; /* Increased from 0.65rem */
+  text-transform: uppercase; 
+  color: var(--moss); 
+  font-weight: 800; 
+  letter-spacing: 0.05em;
+}
+
+.stat-item .value { 
+  font-family: "Fraunces", serif; 
+  font-size: 1.6rem; /* Vastly increased for readability */
+  color: var(--forest-deep); 
+  line-height: 1.1;
+  margin-top: 0.2rem; /* Slight breathing room between label and number */
+}
 @media (max-width: 700px) {
   .hero { padding: 1.5rem 1.1rem; }
   .viz-container { flex-direction: column; height: auto; min-height: 100vh; }
@@ -166,7 +209,6 @@ input:checked + .slider:before { transform: translateX(16px); }
 .chart-wrapper {
   display: flex;
   justify-content: center;
-  max-height: 25vh;
   width: 100%;
 }
 
