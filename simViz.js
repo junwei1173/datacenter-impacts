@@ -153,7 +153,7 @@ function resetSimData() {
 
 function setupToggle() {
     d3.select("#map-toggle").property("checked", isSimMode);
-    d3.select("#toggle-label").text(isSimMode ? "Simulation" : "Real Map");
+    d3.select("#toggle-label").text(isSimMode ? "Sim" : "Real Map");
     d3.select("#sim-controls").style("display", isSimMode ? "flex" : "none");
     d3.select("#real-controls").style("display", isSimMode ? "none" : "block");
 
@@ -163,7 +163,7 @@ function setupToggle() {
 
         d3.select("#dc-detail-overlay").style("display", "none");
 
-        d3.select("#toggle-label").text(isSimMode ? "Simulation" : "Real Map");
+        d3.select("#toggle-label").text(isSimMode ? "Sim" : "Real Map");
         d3.select("#sim-controls").style("display", isSimMode ? "flex" : "none");
         d3.select("#real-controls").style("display", isSimMode ? "none" : "block");
 
@@ -441,7 +441,8 @@ function updateInventoryUI() {
                 if (isNowOpen) {
                     body.classed("open", true);
                     card.style("border-color", "var(--forest)"); // Green border for active card
-                    selectedCenterId = dc.id;                    // Set the global tracking ID
+                    selectedCenterId = dc.id;
+                    card.node().scrollIntoView({ behavior: "smooth", block: "center" });                    // Set the global tracking ID
                 } else {
                     selectedCenterId = null;                     // Deselect if closing the card
                 }
