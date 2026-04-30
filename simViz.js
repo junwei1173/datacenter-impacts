@@ -535,13 +535,8 @@ function updateInventoryUI() {
 function calculateTotals(data) {
     const totalAnnualTW = data.reduce((sum, d) => {
         const mwVal = getFacilityMW(d); 
-        
-        // Dynamic utilization based on facility size
-        let utilization = 0.50; 
-        if (mwVal >= 100) utilization = 0.85; 
-        else if (mwVal >= 50) utilization = 0.65; 
 
-        const facilityTW = mwVal * 0.00876 * utilization;
+        const facilityTW = mwVal * 0.00876 * 0.08;
         return sum + facilityTW;
     }, 0);
     
