@@ -319,7 +319,11 @@ function renderNodes(svg, data, xScale, yScale) {
         .transition().duration(400)
         .attr("cx", d => xScale(+d.long))
         .attr("cy", d => yScale(+d.lat))
+<<<<<<< HEAD
         .attr("r", d => isSimMode ? mwScale(d.mw) : mwScale(getFacilityMW(d)))
+=======
+        .attr("r", d => mwScale(d.mw))
+>>>>>>> main
         .attr("fill", d => d.status != "Custom" ? colorScale(d.status) : "orange")
         .attr("stroke", d => d.id === selectedCenterId ? "#000" : "#fff")
         .attr("stroke-width", d => d.id === selectedCenterId ? 6 : 3)
